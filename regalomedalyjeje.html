@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Carta viva — Para ti</title>
+<style>
+/* ----------------------
+   Estilos generales
+   ---------------------- */
+:root{
+  --bg:#fff8fb;
+  --panel:#fff;
+  --accent:#ff7fa6;
+  --accent-2:#f6c1d8;
+  --muted:#9b8f97;
+  --glass: rgba(255,255,255,0.6);
+  --shadow: 0 6px 30px rgba(20,20,30,0.06);
+  --glass-border: rgba(255,255,255,0.7);
+  --soft: 500ms cubic-bezier(.2,.9,.3,1);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Georgia";
+  background: linear-gradient(180deg, #fff8fb 0%, #fff0f6 100%);
+  color:#44363c;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  overflow-x:hidden;
+  line-height:1.45;
+  padding:32px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* Card */
+.card{
+  width:960px;
+  max-width:96vw;
+  background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.95));
+  border-radius:20px;
+  padding:32px;
+  box-shadow:var(--shadow);
+  position:relative;
+  overflow:hidden;
+  border:1px solid rgba(200,180,190,0.35);
+}
+
+/* Header / envelope */
+.header{
+  display:flex;
+  gap:20px;
+  align-items:center;
+}
+.logo{
+  width:96px;height:96px;border-radius:14px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-weight:700;font-size:28px;
+  box-shadow: 0 6px 20px rgba(250,120,160,0.18);
+  transform:translateY(0);
+  transition:transform .6s var(--soft);
+}
+.logo.heartbeat{ animation:beat 1.2s infinite; transform-origin:center center; }
+@keyframes beat{
+  0%{transform:scale(1)}
+  30%{transform:scale(1.06)}
+  60%{transform:scale(0.98)}
+  100%{transform:scale(1)}
+}
+.title{
+  font-family: "Georgia", serif;
+  font-size:20px;
+  color:#432b33;
+}
+.subtitle{
+  color:var(--muted); font-size:13px;
+  margin-top:6px;
+}
+
+/* Letter area */
+.letter{
+  margin-top:18px;
+  display:grid;
+  grid-template-columns: 1fr 300px;
+  gap:28px;
+}
+.left{
+  padding:20px;
+  border-radius:14px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.5));
+  border:1px solid var(--glass-border);
+  box-shadow: 0 8px 30px rgba(60,40,50,0.03);
+  min-height:420px;
+  position:relative;
+  overflow:hidden;
+}
+.right{
+  padding:20px;
+  border-radius:14px;
+  background:transparent;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+/* Opening paragraph */
+.opening{
+  font-family: "Georgia", serif;
+  font-size:18px;
+  color:#49303a;
+  margin:6px 0 18px;
+  opacity:0;
+  transform:translateY(10px);
+  transition:opacity .8s ease, transform .8s ease;
+}
+.opening.show{ opacity:1; transform:translateY(0); }
+
+/* Memories grid */
+.memories{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.mem-card{
+  flex:1 1 calc(33% - 12px);
+  min-width:120px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.7), rgba(255,248,250,0.7));
+  border-radius:12px;
+  padding:12px;
+  cursor:pointer;
+  border:1px solid rgba(240,220,230,0.6);
+  transition:transform .35s var(--soft), box-shadow .35s var(--soft);
+  box-shadow: 0 6px 18px rgba(60,40,50,0.03);
+}
+.mem-card:hover{ transform:translateY(-6px) }
+.mem-card.locked{ filter:grayscale(.12) brightness(.98); }
+.mem-title{ font-weight:600; font-size:14px; color:#3b2a2f }
+.mem-date{ font-size:12px; color:var(--muted); margin-top:6px }
+
+/* Reveal area */
+.reveal{
+  margin-top:14px;
+  padding:12px;
+  border-radius:10px;
+  min-height:120px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.65), rgba(255,255,255,0.55));
+  border:1px dashed rgba(240,210,220,0.6);
+  opacity:0; transform:translateY(10px); transition:all .6s var(--soft);
+}
+.reveal.open{ opacity:1; transform:translateY(0) }
+
+/* Promises - final */
+.final{
+  margin-top:14px;
+  padding:18px;
+  border-radius:14px;
+  text-align:center;
+  background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,245,248,0.95));
+  border:1px solid rgba(240,200,215,0.6);
+}
+.final .vow{
+  font-family:"Georgia", serif;
+  font-size:20px;
+  margin-bottom:12px;
+  color:#4a2f36;
+  opacity:0;
+  transform:translateY(12px) scale(.99);
+  transition:all .7s cubic-bezier(.2,.9,.3,1);
+}
+.final.show .vow{ opacity:1; transform:translateY(0) scale(1) }
+
+/* Action buttons */
+.controls{
+  display:flex; gap:10px; align-items:center; justify-content:flex-end;
+}
+.btn{
+  background:var(--accent);
+  color:white; border:none; padding:10px 14px; border-radius:10px;
+  cursor:pointer; font-weight:600; box-shadow:0 6px 16px rgba(250,100,150,0.12);
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+.btn.secondary{ background:transparent; color:var(--accent); border:1px solid rgba(255,120,150,0.12); box-shadow:none; font-weight:600; }
+.btn:active{ transform:translateY(2px) }
+.btn.ghost{ background:transparent; color:var(--muted); border:1px dashed rgba(180,160,170,0.15)}
+
+/* Heart particle canvas */
+.canvas {
+  position:absolute; inset:0; pointer-events:none;
+}
+
+/* footer small text */
+.small{
+  font-size:12px;color:var(--muted);
+  text-align:center;margin-top:10px;
+}
+
+/* Responsive */
+@media (max-width:880px){
+  .letter{ grid-template-columns: 1fr; }
+  .mem-card{ flex:1 1 calc(50% - 12px) }
+  .logo{ width:72px;height:72px;font-size:22px }
+}
+
+/* Special flourish */
+.sparkle{
+  position:absolute; right:-60px; top:-80px; width:300px; height:300px;
+  filter: blur(20px); opacity:0.45; transform:rotate(12deg);
+}
+
+/* small focus outline */
+:focus{ outline:4px solid rgba(255,127,166,0.12); outline-offset:2px; border-radius:8px; }
+
+/* final confetti hearts */
+.confetti{
+  position:absolute; inset:0; pointer-events:none; z-index:40;
+}
+</style>
+</head>
+<body>
+<div class="card" role="main" aria-labelledby="heading">
+  <canvas id="particles" class="canvas" aria-hidden="true"></canvas>
+  <div id="confetti" class="confetti" aria-hidden="true"></div>
+
+  <div class="header">
+    <div class="logo" id="logo" aria-hidden="true">♥</div>
+    <div>
+      <div class="title" id="heading">Para ti Medaly — De tu pipí</div>
+      <div class="subtitle">Esta es la sorpresa que te puedo dar por estar lejos, pero será la primera de muchas que hago con el corazón</div>
+    </div>
+    <div style="flex:1"></div>
+    <div class="controls" aria-hidden="false">
+      <button class="btn secondary" id="playAmb">Activar música suave</button>
+      <label class="btn ghost" title="Cargar tu canción">
+        Cargar canción
+        <input type="file" id="audioFile" accept="audio/*" style="display:none">
+      </label>
+      <button class="btn" id="finalBtn">Promesa</button>
+    </div>
+  </div>
+
+  <div class="letter" id="letter">
+    <section class="left" aria-labelledby="letter-title">
+      <h2 id="letter-title" style="margin:0 0 8px; font-family:Georgia,serif;">Feliz 14 preciosa jsjs</h2>
+      <p class="opening" id="opening">
+        Te escribo con la paciencia que te tengo cada que me dices zzz jajaj. Esta carta no busca nada más que el sincero cariño que me dijiste que tienes y que puedes dar, y así mismo veas que soy digno de él. Tú misma lo dijiste, hoy es el 14 de muchos que se vienen jejej, y esta es mi manera de decirte lo mucho que puedo hacer por ti, tal vez sea raro jajaj, pero lo hago de corazón, aun y cuando me dices ZZZ ajaaj, aun asi. Y ahora las promesas que te hice, y que prometo que las cumplire apenas vuelva a Pasquito:3. Dales click para que las leas.
+      </p>
+
+      <div class="memories" id="memories" aria-live="polite" style="margin-top:20px;">
+        <!-- Memory cards - locked initially -->
+        <div class="mem-card locked" data-id="m1" tabindex="0">
+          <div class="mem-title">Las piritas.</div>
+          <div class="mem-date">Tan lindas y brillantes como tú</div>
+        </div>
+        <div class="mem-card locked" data-id="m2" tabindex="0">
+          <div class="mem-title">Las pulseras.</div>
+          <div class="mem-date">Todas tuyas preciosa</div>
+        </div>
+        <div class="mem-card locked" data-id="m3" tabindex="0">
+          <div class="mem-title">Los anillos</div>
+          <div class="mem-date">Lo mismo que las pulseras jasdja</div>
+        </div>
+        <div class="mem-card locked" data-id="m4" tabindex="0">
+          <div class="mem-title">Flores</div>
+          <div class="mem-date">Las que quieras preciosa</div>
+        </div>
+        <div class="mem-card locked" data-id="m5" tabindex="0">
+          <div class="mem-title">El Yape</div>
+          <div class="mem-date">Tú pideme nomas</div>
+        </div>
+        <div class="mem-card locked" data-id="m6" tabindex="0">
+          <div class="mem-title">El concierto privado</div>
+          <div class="mem-date">Privado nomas te gusta oe mañosa jaja</div>
+        </div>
+      </div>
+
+      <div class="reveal" id="revealBox" aria-live="polite">
+        <em>Toca una memoria para desbloquearla.</em>
+      </div>
+    </section>
+
+    <aside class="right" aria-labelledby="side-title">
+      <div id="side-title" style="font-weight:700">Pequeñas herramientas</div>
+      <p class="small">Cada memoria oculta una nota, una promesa breve o una promesa que pedirá ser cumplida. Puedes abrirlas en cualquier orden. Cuando te sientas lista, pulsa <strong>Promesa</strong>.</p>
+
+      <div style="display:flex; gap:8px;">
+        <button class="btn" id="revealAll">Desbloquear todas</button>
+        <button class="btn secondary" id="dim">Suspender luz</button>
+      </div>
+
+      <div class="final" id="miniFinal" aria-hidden="true" style="margin-top:auto;">
+        <div style="font-size:13px;color:var(--muted)">Cuando la promesa se revele, el corazón hará ruido.</div>
+        <div style="height:8px"></div>
+        <div class="vow" id="miniVow">—</div>
+      </div>
+
+      <div style="height:8px"></div>
+      <div class="small">Sugerencia: si quieres, arrastra una canción (tu MP3) o pulsa "Activar música suave".</div>
+    </aside>
+  </div>
+
+  <div class="small" style="margin-top:14px;">Hecho con cuidado, código y susurros. Guarda este archivo; ábrelo cuando quieras recordarte querida.</div>
+</div>
+<!-- Música real -->
+<audio id="bgMusic" loop>
+  <source src="amantes.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+/*
+  Carta viva — Un solo archivo HTML.
+  Autor: tu desarrollador romántico.
+  Comentarios: el siguiente JavaScript controla
+  - partículas en canvas (corazones suaves)
+  - desbloqueo de memorias (clicks / teclas)
+  - generación opcional de audio suave con WebAudio
+  - carga de archivo de audio local cuando el usuario lo elige
+  - "promesa" final con confetti en forma de corazones
+*/
+
+/* ---------- Utilities ---------- */
+const q = sel => document.querySelector(sel);
+const qa = sel => Array.from(document.querySelectorAll(sel));
+
+/* ---------- Elements ---------- */
+const opening = q('#opening');
+const memCards = qa('.mem-card');
+const revealBox = q('#revealBox');
+const revealAllBtn = q('#revealAll');
+const finalBtn = q('#finalBtn');
+const miniFinal = q('#miniFinal');
+const miniVow = q('#miniVow');
+const playAmb = q('#playAmb');
+const audioFileInput = q('#audioFile');
+const logo = q('#logo');
+const particlesCanvas = q('#particles');
+const confettiLayer = q('#confetti');
+const card = q('.card');
+let audioLoaded = false;
+
+/* ---------- Initial reveal animation ---------- */
+window.requestAnimationFrame(() => {
+  opening.classList.add('show');
+  logo.classList.add('heartbeat');
+});
+
+/* ---------- Memoria data (textos originales, íntimos) ---------- */
+const memoriesData = {
+  m1: {
+    title: "Las piritas",
+    text: `No pienses que se las haya dado a otra persona eh, me dijiste que te gustan, y están ahi guardadas solo para ti preciosa:3.`,
+    note: "Promesa: Dartelas, y no solo esas jajaj, todas las que llegue a encontrar cuando me vaya a chambear xde."
+  },
+  m2: {
+    title: "Las pulseras",
+    text: `Te habia dicho que compra un par que queria compartirlas solo contigo, y siguen, esperando a que te animes y perdones para salir y dártelas.`,
+    note: "Promesa: Obviamente dartelas y asi cada que las veas te acuerdes de mi jasjaj."
+  },
+  m3: {
+    title: "Los anillos",
+    text: `Lo mismo que las pulseras jasdajs, o bueno, me gustaria salir y comprar uno contigo, asi seria más especial no crees? jejej.`,
+    note: "Promesa: Comprar más pues, para que los usemos juntos."
+  },
+  m4: {
+    title: "Flores",
+    text: `Leo esto y sinceramente no me acuerdo de donde lo sacaste jasdjsafa, pero buehhh, si flores quiere la niña, flores le daré`,
+    note: "Promesa: Cumplri tus caprichos comprando flores pues jsjsj."
+  },
+  m5: {
+    title: "El Yape",
+    text: `Recuerdo que esto es por lo de tu cumple el 26 de enero, igual creo que ya lo pague con lo de hoy XD, pero cuando quieras tu pideme preciosa, aqui estoy para resolver tus caprichos".`,
+    note: "Promesa: Lo mismo que las flores ahsdasf"
+  },
+  m6: {
+    title: "El concierto privado",
+    text: `Ahora tbm te debo esto jajaj, recuerdo haberte mandado un audio cantandote amantes, pero sería más bonito hacerlo en persona, para decirte, esta se llama ¨amantes¨ dedicada para mi amante, osea tu jasdjaj.`,
+    note: "Promesa: Tocar te esa y todas tus canciones favoritas preciosa, rock, huayno, cumbia, intro de anime, lo que tu quieras preciosa"
+  }
+};
+
+/* ---------- Interaction: open memory ---------- */
+function openMemory(id, el) {
+  const data = memoriesData[id];
+  if(!data) return;
+  // small animation on card
+  el.classList.remove('locked');
+  el.style.transform = 'translateY(-6px) scale(1.01)';
+  setTimeout(()=> el.style.transform = '', 420);
+
+  // reveal content
+  revealBox.innerHTML = `<strong>${data.title}</strong>
+    <p style="margin:8px 0 0;">${data.text}</p>
+    <p style="margin:10px 0 0; font-weight:600; color:var(--accent);"> ${data.note}</p>
+    <div style="margin-top:8px; font-size:12px; color:var(--muted)">Pulse 'Promesa' cuando quieras guardarla para siempre.</div>
+  `;
+  revealBox.classList.add('open');
+
+  // tiny audio cue (bell-like) to reward
+  playTone(880, 0.06, 'sine', 0.02);
+}
+
+/* Click / keyboard handlers for cards */
+memCards.forEach(cardEl=>{
+  const id = cardEl.dataset.id;
+  cardEl.addEventListener('click', ()=> openMemory(id, cardEl));
+  cardEl.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter' || e.key === ' ') openMemory(id, cardEl);
+  });
+});
+
+/* Reveal all */
+revealAllBtn.addEventListener('click', ()=>{
+  memCards.forEach(el=> el.classList.remove('locked'));
+  // show combined message
+  revealBox.innerHTML = `<strong>Todas estas promesas</strong>
+    <p style="margin-top:8px;">Te demostrare que soy digno de tu amor Medaly, DE VERAS jsjsj.</p>`;
+  revealBox.classList.add('open');
+  playTone(660, 0.06, 'triangle', 0.03);
+});
+
+/* Dim toggle: change card background to deep */
+let dimmed = false;
+q('#dim').addEventListener('click', ()=>{
+  dimmed = !dimmed;
+  if(dimmed){
+    document.body.style.background = 'linear-gradient(180deg,#fff4f8,#fff0f4)';
+    q('#dim').textContent = 'Restaurar luz';
+    playTone(220, 0.08, 'sawtooth', 0.03);
+  } else {
+    document.body.style.background = 'linear-gradient(180deg,#fff8fb,#fff0f6)';
+    q('#dim').textContent = 'Suspender luz';
+  }
+});
+
+/* ---------- Final Promise ---------- */
+finalBtn.addEventListener('click', async ()=>{
+  // choose text for final vow
+  const vow = `Te elijo — hoy, y en todos los días que me resten. No es una palabra ligera: es el mapa de mi vida hacia ti. Prometo aprender tus silencios, celebrar tus risas, y guardarte como lo más frágil y valiente que he conocido. ¿Quieres ser mi siempre?`;
+  miniVow.textContent = vow;
+  miniFinal.classList.add('show');
+  // animate logo and confetti
+  logo.classList.add('pulse');
+  burstHearts();
+  // soft chord
+  playChord([440, 550, 660], 0.5);
+  // small glow
+  card.style.boxShadow = '0 14px 70px rgba(250,100,150,0.12)';
+  // ensure screen reader sees change
+  miniFinal.setAttribute('aria-hidden', 'false');
+});
+
+/* ---------- Particles (hearts) ---------- */
+const canvas = particlesCanvas;
+const ctx = canvas.getContext('2d');
+let W = canvas.width = innerWidth;
+let H = canvas.height = innerHeight;
+window.addEventListener('resize', ()=> { W = canvas.width = innerWidth; H = canvas.height = innerHeight; });
+
+const hearts = [];
+function rand(min,max){return Math.random()*(max-min)+min}
+
+function createHeart(x,y,scale,vy,life, hue=330){
+  hearts.push({x,y,scale,vy,life,age:0, hue, rot:rand(-0.4,0.4)});
+}
+
+for(let i=0;i<24;i++){
+  createHeart(rand(0,W), rand(0,H), rand(.6,1.8), rand(0.2,0.9), rand(140,320), 320);
+}
+
+function drawHeartPath(ctx,x,y,s){
+  ctx.beginPath();
+  const topY = y - 8*s;
+  ctx.moveTo(x, topY);
+  ctx.bezierCurveTo(x - 10*s, topY - 12*s, x - 28*s, topY + 6*s, x, topY + 28*s);
+  ctx.bezierCurveTo(x + 28*s, topY + 6*s, x + 10*s, topY - 12*s, x, topY);
+  ctx.closePath();
+}
+
+function animateParticles(){
+  ctx.clearRect(0,0,W,H);
+  for(let i=hearts.length-1;i>=0;i--){
+    const h = hearts[i];
+    h.age++;
+    h.y -= h.vy;
+    h.x += Math.sin(h.age*0.02)*0.6;
+    const alpha = Math.max(0, 1 - h.age/h.life);
+    ctx.save();
+    ctx.translate(h.x, h.y);
+    ctx.rotate(h.rot * Math.sin(h.age*0.01));
+    ctx.scale(h.scale, h.scale);
+    // gradient fill
+    const g = ctx.createLinearGradient(-16,-16,16,24);
+    g.addColorStop(0, `hsla(${h.hue},85%,65%,${0.9*alpha})`);
+    g.addColorStop(1, `hsla(${h.hue-10},85%,55%,${0.6*alpha})`);
+    ctx.fillStyle = g;
+    drawHeartPath(ctx, 0, 8, 0.9);
+    ctx.fill();
+    ctx.restore();
+    if(h.age > h.life){
+      hearts.splice(i,1);
+      // spawn a new gentle heart
+      createHeart(rand(0,W), H + rand(20,120), rand(.6,1.6), rand(0.2,0.9), rand(160,380), 330);
+    }
+  }
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+/* ---------- Confetti hearts for final burst ---------- */
+function burstHearts(){
+  confettiLayer.innerHTML = '';
+  for(let i=0;i<40;i++){
+    const el = document.createElement('div');
+    const size = Math.floor(rand(12,36));
+    el.style.width = `${size}px`;
+    el.style.height = `${size}px`;
+    el.style.position = 'absolute';
+    el.style.left = `${50 + rand(-40,40)}%`;
+    el.style.top = `${50 + rand(-10,10)}%`;
+    el.style.transform = `translate(-50%,-50%) rotate(${rand(0,360)}deg)`;
+    el.style.opacity = 0;
+    el.style.pointerEvents = 'none';
+    el.style.background = `radial-gradient(circle at 40% 30%, rgba(255,255,255,0.65), rgba(255,127,166,0.9))`;
+    el.style.borderRadius = '50%';
+    el.style.boxShadow = `0 6px 20px rgba(180,80,120,0.12)`;
+    confettiLayer.appendChild(el);
+    // animate with JS
+    const dx = rand(-400,400);
+    const dy = rand(-600,-80);
+    el.animate([
+      { transform: el.style.transform + ' translate(0px,0px) scale(0.6)', opacity:0 },
+      { transform: el.style.transform + ` translate(${dx}px,${dy}px) rotate(${rand(90,720)}deg) scale(1)`, opacity:1 },
+      { transform: el.style.transform + ` translate(${dx*1.2}px,${dy*1.4}px) rotate(${rand(720,1440)}deg) scale(0.2)`, opacity:0 }
+    ], { duration: 1600 + Math.random()*900, easing:'cubic-bezier(.2,.9,.3,1)'});
+  }
+  // small clear after animation
+  setTimeout(()=> confettiLayer.innerHTML = '', 3200);
+}
+
+/* ---------- Simple WebAudio ambient + cues ---------- */
+let audioCtx = null;
+let masterGain = null;
+let musicNode = null;
+function ensureAudio(){
+  if(audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.18;
+  masterGain.connect(audioCtx.destination);
+}
+
+/* play a short tone */
+function playTone(freq, length=0.12, type='sine', attack=0.01){
+  ensureAudio();
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = type;
+  o.frequency.value = freq;
+  g.gain.value = 0.0001;
+  o.connect(g); g.connect(masterGain);
+  o.start();
+  g.gain.linearRampToValueAtTime(0.12, audioCtx.currentTime + attack);
+  g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + length);
+  o.stop(audioCtx.currentTime + length + 0.02);
+}
+
+/* play chord */
+function playChord(freqs = [330,440,550], length=0.9){
+  ensureAudio();
+  freqs.forEach((f,i)=>{
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = i==1? 'sine' : 'triangle';
+    o.frequency.value = f;
+    g.gain.value = 0.0001;
+    o.connect(g); g.connect(masterGain);
+    o.start();
+    g.gain.linearRampToValueAtTime(0.12, audioCtx.currentTime + 0.06 + i*0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + length);
+    o.stop(audioCtx.currentTime + length + 0.1);
+  });
+}
+
+/* play a soft ambient pad (looping) */
+let padOscs = [];
+function startAmbient(){
+  ensureAudio();
+  if(padOscs.length) return;
+  const freqs = [220, 275, 330];
+  padOscs = freqs.map((f, idx)=>{
+    const o = audioCtx.createOscillator();
+    o.type = 'sine';
+    o.frequency.value = f;
+    const g = audioCtx.createGain();
+    g.gain.value = 0.0;
+    o.connect(g); g.connect(masterGain);
+    o.start();
+    // gentle fade in
+    g.gain.linearRampToValueAtTime(0.06, audioCtx.currentTime + 2 + idx*0.3);
+    return {o,g};
+  });
+  playChord([330,440,550], 0.8);
+}
+function stopAmbient(){
+  if(!padOscs.length) return;
+  padOscs.forEach(obj=>{
+    try{
+      obj.gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.6);
+      obj.o.stop(audioCtx.currentTime + 0.7);
+    }catch(e){}
+  });
+  padOscs = [];
+}
+
+/* play / stop button */
+let musicOn = false;
+const bgMusic = document.getElementById("bgMusic");
+bgMusic.volume = 0.5;
+
+playAmb.addEventListener("click", () => {
+  if (!musicOn) {
+    bgMusic.play();
+    playAmb.textContent = "Detener música";
+    musicOn = true;
+  } else {
+    bgMusic.pause();
+    playAmb.textContent = "Activar música suave";
+    musicOn = false;
+  }
+});
+let ambientOn = false;
+playAmb.addEventListener('click', ()=>{
+  
+  if(!audioCtx || audioCtx.state === 'suspended'){
+    ensureAudio();
+    // some browsers block audio until user gesture; this is triggered by click
+  }
+  ambientOn = !ambientOn;
+  if(ambientOn){
+    startAmbient();
+    playAmb.textContent = 'Detener música';
+    playAmb.classList.add('active');
+  } else {
+    stopAmbient();
+    playAmb.textContent = 'Activar música suave';
+    playAmb.classList.remove('active');
+  }
+});
+
+/* ---------- Allow user to load local audio file (playback) ---------- */
+audioFileInput.addEventListener('change', (e)=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  // create audio element
+  const url = URL.createObjectURL(f);
+  const a = new Audio(url);
+  a.loop = true;
+  a.volume = 0.75;
+  a.controls = false;
+  a.play().catch(()=>{ /* autoplay blocked */ });
+  // stop ambient pad if playing
+  stopAmbient();
+  ambientOn = false;
+  playAmb.textContent = 'Activar música suave';
+  // smooth fade
+  if(audioLoaded && musicNode && audioCtx){
+    try{ musicNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.6) }catch(e){}
+  }
+  // hook up via MediaElementSource if possible
+  try{
+    ensureAudio();
+    const source = audioCtx.createMediaElementSource(a);
+    const g = audioCtx.createGain(); g.gain.value = 0.8;
+    source.connect(g); g.connect(masterGain);
+    musicNode = g;
+    a.play();
+  }catch(err){
+    // fallback: play directly
+    a.play();
+  }
+  audioLoaded = true;
+});
+
+/* ---------- Accessibility: keyboard hints ---------- */
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'm'){
+    playAmb.click();
+  } else if(e.key === 'p'){
+    finalBtn.click();
+  }
+});
+
+/* ---------- Small playful note: when revealing memory, add small star sparkles ---------- */
+function tinySpark(x,y){
+  const el = document.createElement('div');
+  el.style.position = 'absolute';
+  el.style.left = `${x}px`;
+  el.style.top = `${y}px`;
+  el.style.width = '8px';
+  el.style.height = '8px';
+  el.style.background = 'radial-gradient(circle, rgba(255,255,255,0.9), rgba(255,200,220,0.9))';
+  el.style.borderRadius = '50%';
+  el.style.opacity = '0';
+  el.style.pointerEvents = 'none';
+  document.body.appendChild(el);
+  el.animate([{transform:'translateY(0) scale(.6)', opacity:0},{transform:'translateY(-30px) scale(1)', opacity:1},{transform:'translateY(-80px) scale(.2)', opacity:0}], {duration:800, easing:'cubic-bezier(.2,.9,.3,1)'});
+  setTimeout(()=> el.remove(), 900);
+}
+
+/* When clicking memory: tiny sparkle at mousepos */
+qa('.mem-card').forEach(el=>{
+  el.addEventListener('click', (ev)=>{
+    tinySpark(ev.clientX, ev.clientY);
+  });
+});
+
+/* ---------- Small visual polish: gentle parallax sparkle in corner ---------- */
+(function addSparkleSVG(){
+  const s = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  s.setAttribute('class','sparkle');
+  s.setAttribute('viewBox','0 0 200 200');
+  s.innerHTML = `<defs>
+    <linearGradient id="g1" x1="0" x2="1">
+      <stop offset="0" stop-color="#fff0f6" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#ffddeb" stop-opacity="0.6"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(20,20) rotate(10)">
+    <circle cx="40" cy="40" r="36" fill="url(#g1)" opacity="0.96"/>
+    <g transform="translate(80,80) scale(0.9)">
+      <path d="M10 20 C10 12 18 6 28 6 C38 6 46 12 46 20 C46 34 28 46 28 46 C28 46 10 34 10 20 Z" fill="#fff6fa" opacity="0.86" />
+    </g>
+  </g>`;
+  document.querySelector('.card').appendChild(s);
+})();
+
+/* ---------- Small helper: adaptive title based on unlocked memories ---------- */
+function unlockedCount(){
+  return qa('.mem-card:not(.locked)').length;
+}
+setInterval(()=>{
+  const n = unlockedCount();
+  if(n >= 3) {
+    q('#heading').textContent = `Para ti — recuerdos desbloqueados: ${n}`;
+  }
+}, 900);
+
+/* ---------- End of script ---------- */
+</script>
+</body>
+</html>
